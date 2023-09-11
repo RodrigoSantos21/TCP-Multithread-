@@ -1,5 +1,7 @@
 import java.io.*;
 import java.net.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 class Client {
@@ -42,10 +44,17 @@ class Client {
 
                 if(line.equalsIgnoreCase("enviar")) {
                     System.out.println(
-                            "Sending the File to the Server");
+                            "Enviando arquivo para o servidor...");
                     // Call SendFile Method
                     sendFile(
                             "C:/Users/Rodrigo/Desktop/txtRedes.txt");
+                    System.out.println("Servidor respondeu "
+                            + in.readLine());
+                }
+
+                if(line.equalsIgnoreCase("hash")) {
+                    System.out.println("Hash do arquivo é: "
+                            + in.readLine());
                 }
             }
 
@@ -76,9 +85,23 @@ class Client {
                 != -1) {
             // Send the file to Server Socket
             dataOutputStream.write(buffer, 0, bytes);
+
         }
         // close the file here
         fileInputStream.close();
+    }
+
+
+
+    private static String stringHexa(byte[] bytes) {
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < bytes.length; i++) {
+            int parteAlta = ((bytes[i] >> 4) & 0xf) << 4;
+            int parteBaixa = bytes[i] & 0xf;
+            if (parteAlta == 0) s.append('0');
+            s.append(Integer.toHexString(parteAlta | parteBaixa));
+        }
+        return s.toString();
     }
 
 }

@@ -1,5 +1,9 @@
 import java.io.*;
 import java.net.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Objects;
 
 // Server class
 class Server {
@@ -54,7 +58,7 @@ class Server {
     // ClientHandler class
     private static class ClientHandler implements Runnable {
         private final Socket clientSocket;
-
+        private static String hash;
         // Constructor
         public ClientHandler(Socket socket)
         {
@@ -83,7 +87,7 @@ class Server {
                     System.out.printf(
                             "Mensagem enviada do cliente: %s\n",
                             line);
-                    out.println(line);
+                    out.println("Mensagem recebida");
                     if(line.equalsIgnoreCase("enviar")) {
                         dataInputStream = new DataInputStream(
                                 clientSocket.getInputStream());
@@ -92,6 +96,11 @@ class Server {
                         // Here we call receiveFile define new for that
                         // file
                         receiveFile("NewFile1.txt");
+                        out.println("Arquivo recebido");
+                    }
+
+                    if(line.equalsIgnoreCase("hash")) {
+                        out.println(hash);
                     }
                 }
             }
@@ -137,9 +146,31 @@ class Server {
                 fileOutputStream.write(buffer, 0, bytes);
                 size -= bytes; // read upto file size
             }
+            hash = stringHexa(Objects.requireNonNull(gerarHash(Arrays.toString(buffer), "SHA-256")));
             // Here we received file
-            System.out.println("File is Received");
+            System.out.println("O arquivo foi recebido");
             fileOutputStream.close();
+        }
+
+        public static byte[] gerarHash(String frase, String algoritmo) {
+            try {
+                MessageDigest md = MessageDigest.getInstance(algoritmo);
+                md.update(frase.getBytes());
+                return md.digest();
+            } catch (NoSuchAlgorithmException e) {
+                return null;
+            }
+        }
+
+        private static String stringHexa(byte[] bytes) {
+            StringBuilder s = new StringBuilder();
+            for (int i = 0; i < bytes.length; i++) {
+                int parteAlta = ((bytes[i] >> 4) & 0xf) << 4;
+                int parteBaixa = bytes[i] & 0xf;
+                if (parteAlta == 0) s.append('0');
+                s.append(Integer.toHexString(parteAlta | parteBaixa));
+            }
+            return s.toString();
         }
     }
 }
