@@ -82,24 +82,27 @@ class Server {
 
                 String line;
                 while ((line = in.readLine()) != null) {
-
+                    dataInputStream = new DataInputStream(
+                            clientSocket.getInputStream());
+                    dataOutputStream = new DataOutputStream(
+                            clientSocket.getOutputStream());
                     // escreve a mensagem recebida do cliente
                     System.out.printf(
                             "Mensagem enviada do cliente: %s\n",
                             line);
                     out.println("Mensagem recebida");
-                    if(line.equalsIgnoreCase("enviar")) {
-                        dataInputStream = new DataInputStream(
-                                clientSocket.getInputStream());
-                        dataOutputStream = new DataOutputStream(
-                                clientSocket.getOutputStream());
-                        // Here we call receiveFile define new for that
-                        // file
-                        receiveFile("NewFile1.txt");
-                        out.println("Arquivo recebido");
+
+                    if(line.equalsIgnoreCase("Arquivo")) {
+                        System.out.println(
+                                "Enviando arquivo para o cliente...");
+                        // Call SendFile Method
+                        sendFile(
+                                "C:/Users/Rodrigo/Desktop/txtRedes.txt");
+                        out.println("Servidor enviou o arquivo");
                     }
 
                     if(line.equalsIgnoreCase("hash")) {
+                        //System.out.println("Chegou aqui e o hash é:" + hash);
                         out.println(hash);
                     }
                 }
@@ -117,8 +120,6 @@ class Server {
                     if (in != null) {
                         in.close();
                         clientSocket.close();
-                        dataInputStream.close();
-                        dataOutputStream.close();
                     }
                 }
                 catch (IOException e) {
@@ -127,30 +128,30 @@ class Server {
             }
         }
 
-        private static void receiveFile(String fileName)
+        private static void sendFile(String path)
                 throws Exception
         {
             int bytes = 0;
-            FileOutputStream fileOutputStream
-                    = new FileOutputStream(fileName);
+            // Open the File where he located in your pc
+            File file = new File(path);
+            FileInputStream fileInputStream
+                    = new FileInputStream(file);
 
-            long size
-                    = dataInputStream.readLong(); // read file size
+            // Here we send the File to Server
+            dataOutputStream.writeLong(file.length());
+            // Here we  break file into chunks
             byte[] buffer = new byte[4 * 1024];
-            while (size > 0
-                    && (bytes = dataInputStream.read(
-                    buffer, 0,
-                    (int)Math.min(buffer.length, size)))
+            while ((bytes = fileInputStream.read(buffer))
                     != -1) {
-                // Here we write the file using write method
-                fileOutputStream.write(buffer, 0, bytes);
-                size -= bytes; // read upto file size
+                // Send the file to Server Socket
+                dataOutputStream.write(buffer, 0, bytes);
+
             }
+            // close the file here
             hash = stringHexa(Objects.requireNonNull(gerarHash(Arrays.toString(buffer), "SHA-256")));
-            // Here we received file
-            System.out.println("O arquivo foi recebido");
-            fileOutputStream.close();
+            fileInputStream.close();
         }
+
 
         public static byte[] gerarHash(String frase, String algoritmo) {
             try {

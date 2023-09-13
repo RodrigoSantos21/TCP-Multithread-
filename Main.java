@@ -42,14 +42,9 @@ class Client {
                 System.out.println("Servidor respondeu "
                         + in.readLine());
 
-                if(line.equalsIgnoreCase("enviar")) {
-                    System.out.println(
-                            "Enviando arquivo para o servidor...");
-                    // Call SendFile Method
-                    sendFile(
-                            "C:/Users/Rodrigo/Desktop/txtRedes.txt");
-                    System.out.println("Servidor respondeu "
-                            + in.readLine());
+                if(line.equalsIgnoreCase("Arquivo")) {
+                    receiveFile("NewFile1.txt");
+                    System.out.println(in.readLine());
                 }
 
                 if(line.equalsIgnoreCase("hash")) {
@@ -68,40 +63,29 @@ class Client {
         }
     }
 
-    private static void sendFile(String path)
+    private static void receiveFile(String fileName)
             throws Exception
     {
         int bytes = 0;
-        // Open the File where he located in your pc
-        File file = new File(path);
-        FileInputStream fileInputStream
-                = new FileInputStream(file);
+        FileOutputStream fileOutputStream
+                = new FileOutputStream(fileName);
 
-        // Here we send the File to Server
-        dataOutputStream.writeLong(file.length());
-        // Here we  break file into chunks
+        long size
+                = dataInputStream.readLong(); // read file size
         byte[] buffer = new byte[4 * 1024];
-        while ((bytes = fileInputStream.read(buffer))
+        while (size > 0
+                && (bytes = dataInputStream.read(
+                buffer, 0,
+                (int)Math.min(buffer.length, size)))
                 != -1) {
-            // Send the file to Server Socket
-            dataOutputStream.write(buffer, 0, bytes);
-
+            // Here we write the file using write method
+            fileOutputStream.write(buffer, 0, bytes);
+            size -= bytes; // read upto file size
         }
-        // close the file here
-        fileInputStream.close();
-    }
 
-
-
-    private static String stringHexa(byte[] bytes) {
-        StringBuilder s = new StringBuilder();
-        for (int i = 0; i < bytes.length; i++) {
-            int parteAlta = ((bytes[i] >> 4) & 0xf) << 4;
-            int parteBaixa = bytes[i] & 0xf;
-            if (parteAlta == 0) s.append('0');
-            s.append(Integer.toHexString(parteAlta | parteBaixa));
-        }
-        return s.toString();
+        // Here we received file
+        //System.out.println("O arquivo foi recebido");
+        fileOutputStream.close();
     }
 
 }
