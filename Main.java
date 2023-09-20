@@ -51,7 +51,7 @@ class Client {
 
                 if(line.equalsIgnoreCase("Arquivo")) {
                     String a = in.readLine();
-                if(a.equalsIgnoreCase("true")){
+                    if(a.equalsIgnoreCase("true")){
                         receiveFile("nomeArquivo.txt");
                         System.out.println(in.readLine());
                     }
@@ -64,6 +64,7 @@ class Client {
                     out.println("CRC");
                     hashOriginal = in.readLine();
                     if(hashOriginal.equalsIgnoreCase(hash)){
+                        System.out.println("Hash do arquivo enviado:" + hashOriginal + ", Hash do arquivo que chegou:" + hash);
                         System.out.println("Check sum OK");
                     }
                 }
@@ -87,7 +88,7 @@ class Client {
                 = new FileOutputStream(fileName);
 
         long size
-                = dataInputStream.readLong(); // read file size
+                = dataInputStream.readLong(); // le o tamanho do arquivo
         byte[] buffer = new byte[4 * 1024];
         while (size > 0
                 && (bytes = dataInputStream.read(
@@ -124,3 +125,5 @@ class Client {
     }
 
 }
+
+
