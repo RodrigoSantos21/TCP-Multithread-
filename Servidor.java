@@ -59,6 +59,8 @@ class Server {
     private static class ClientHandler implements Runnable {
         private final Socket clientSocket;
         private static String hash;
+        private static long tamanho;
+        private static String[] nome;
         // Constructor
         public ClientHandler(Socket socket)
         {
@@ -87,22 +89,19 @@ class Server {
                     dataOutputStream = new DataOutputStream(
                             clientSocket.getOutputStream());
                     // escreve a mensagem recebida do cliente
-                    System.out.printf(
-                            "Mensagem enviada do cliente: %s\n",
-                            line);
                     out.println("Mensagem recebida");
 
-                    if(line.equalsIgnoreCase("Arquivo")) {
+                    nome = line.split(" ", 2);
+                    if(line.contains("Arquivo")) {
                         System.out.println(
                                 "Enviando arquivo para o cliente...");
                         // Call SendFile Method
                         sendFile(
-                                "C:/Users/Rodrigo/Desktop/txtRedes.txt");
-                        out.println("Servidor enviou o arquivo");
+                                "C:/Users/Rodrigo/Desktop/" + nome[1]);
+                        out.println("Arquivo: " + nome[1] + ", Com o hash: " + hash + ", Tamanho: " + tamanho + " bytes");
                     }
 
-                    if(line.equalsIgnoreCase("hash")) {
-                        //System.out.println("Chegou aqui e o hash é:" + hash);
+                    if(line.contains("CRC")){
                         out.println(hash);
                     }
                 }
@@ -137,17 +136,17 @@ class Server {
             FileInputStream fileInputStream
                     = new FileInputStream(file);
 
-            // Here we send the File to Server
+
             dataOutputStream.writeLong(file.length());
-            // Here we  break file into chunks
+            tamanho = file.length();
             byte[] buffer = new byte[4 * 1024];
             while ((bytes = fileInputStream.read(buffer))
                     != -1) {
-                // Send the file to Server Socket
+
                 dataOutputStream.write(buffer, 0, bytes);
 
             }
-            // close the file here
+
             hash = stringHexa(Objects.requireNonNull(gerarHash(Arrays.toString(buffer), "SHA-256")));
             fileInputStream.close();
         }
