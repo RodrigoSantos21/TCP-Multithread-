@@ -50,8 +50,14 @@ class Client {
                         + in.readLine());
 
                 if(line.equalsIgnoreCase("Arquivo")) {
-                    receiveFile("NewFile1.txt");
-                    System.out.println(in.readLine());
+                    String a = in.readLine();
+                if(a.equalsIgnoreCase("true")){
+                        receiveFile("nomeArquivo.txt");
+                        System.out.println(in.readLine());
+                    }
+                    else{
+                        System.out.println(a);
+                    }
                 }
 
                 if(line.equalsIgnoreCase("CRC")){

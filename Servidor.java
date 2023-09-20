@@ -61,6 +61,7 @@ class Server {
         private static String hash;
         private static long tamanho;
         private static String[] nome;
+        private static boolean arquivoExiste;
         // Constructor
         public ClientHandler(Socket socket)
         {
@@ -95,10 +96,18 @@ class Server {
                     if(line.contains("Arquivo")) {
                         System.out.println(
                                 "Enviando arquivo para o cliente...");
-                        // Call SendFile Method
-                        sendFile(
-                                "C:/Users/Rodrigo/Desktop/" + nome[1]);
-                        out.println("Arquivo: " + nome[1] + ", Com o hash: " + hash + ", Tamanho: " + tamanho + " bytes");
+
+                        testFile("C:/Users/Rodrigo/Desktop/" + nome[1]);
+                        if(arquivoExiste){
+                            out.println("true");
+                            sendFile(
+                                    "C:/Users/Rodrigo/Desktop/" + nome[1]);
+                            out.println("Arquivo: " + nome[1] + ", Com o hash: " + hash + ", Tamanho: " + tamanho + " bytes" + ", Status: Ok");
+                        }
+                        else{
+                            System.out.println("Aqu2i");
+                            out.println("Arquivo não existe");
+                        }
                     }
 
                     if(line.contains("CRC")){
@@ -127,28 +136,31 @@ class Server {
             }
         }
 
+        private static void testFile(String path){
+            File file = new File(path);
+            arquivoExiste = file.exists();
+        }
+
         private static void sendFile(String path)
                 throws Exception
         {
             int bytes = 0;
             // Open the File where he located in your pc
             File file = new File(path);
-            FileInputStream fileInputStream
-                    = new FileInputStream(file);
+                FileInputStream fileInputStream
+                        = new FileInputStream(file);
+                dataOutputStream.writeLong(file.length());
+                tamanho = file.length();
+                byte[] buffer = new byte[4 * 1024];
+                while ((bytes = fileInputStream.read(buffer))
+                        != -1) {
 
+                    dataOutputStream.write(buffer, 0, bytes);
 
-            dataOutputStream.writeLong(file.length());
-            tamanho = file.length();
-            byte[] buffer = new byte[4 * 1024];
-            while ((bytes = fileInputStream.read(buffer))
-                    != -1) {
+                }
 
-                dataOutputStream.write(buffer, 0, bytes);
-
-            }
-
-            hash = stringHexa(Objects.requireNonNull(gerarHash(Arrays.toString(buffer), "SHA-256")));
-            fileInputStream.close();
+                hash = stringHexa(Objects.requireNonNull(gerarHash(Arrays.toString(buffer), "SHA-256")));
+                fileInputStream.close();
         }
 
 
